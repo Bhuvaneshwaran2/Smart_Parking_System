@@ -1,0 +1,28 @@
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/java:1-17-bookworm
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/${localWorkspaceFolderBasename}:cached
+    depends_on:
+      mysql:
+        condition: service_healthy
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: smart_parking
+      MYSQL_USER: parking
+      MYSQL_PASSWORD: parking_demo_password
+      MYSQL_ROOT_PASSWORD: root_demo_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "parking", "-pparking_demo_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+volumes:
+  mysql-data:
